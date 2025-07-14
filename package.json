@@ -1,0 +1,23 @@
+{
+  "name": "video-downloader-backend",
+  "version": "1.0.0",
+  "description": "Social media video extractor using yt-dlp",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "apt-get update && apt-get install -y python3-pip ffmpeg && pip3 install yt-dlp"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.10.0",
+    "cheerio": "^1.1.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "puppeteer": "^24.12.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
