@@ -1,19 +1,24 @@
-# Use Node base image with Debian
-FROM node:20-bullseye
+# START from a base image that has Python 3 and Node
+FROM python:3.10-slim
 
-# Install yt-dlp dependencies
+# Install ffmpeg, node, and curl
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip ffmpeg && \
-    pip3 install --break-system-packages yt-dlp
+    apt-get install -y ffmpeg curl gnupg && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
-# Set working directory in container
+# Install yt-dlp
+RUN pip install yt-dlp
+
+# Create app directory
 WORKDIR /app
 
-# Copy everything into the image
+# Copy all backend files
 COPY . .
 
-# Install backend dependencies (Node.js)
+# Install backend dependencies
 RUN npm install
 
-# Start the app
+# Start server
 CMD ["npm", "start"]
