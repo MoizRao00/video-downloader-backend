@@ -14,28 +14,36 @@ app.post('/download', async (req, res) => {
 
   try {
     const { exec } = require('child_process');
+    const fs = require('fs');
 
-    // Create temp file name
     const filename = `video_${Date.now()}.mp4`;
-    const filePath = `/tmp/${filename}`; // or use /app/ if on Railway
+    const filePath = `/tmp/${filename}`;
 
     exec(`yt-dlp -o '${filePath}' '${url}'`, async (err, stdout, stderr) => {
       if (err) {
-        console.error('yt-dlp ERROR:', stderr);
-        return res.status(500).json({ error: 'yt-dlp failed to download the video' });
+        console.error('yt-dlp ERROR:', err);
+        console.error('stderr:', stderr);
+        return res.status(500).json({ error: 'yt-dlp failed' });
       }
 
-     res.download(filePath, filename, (downloadErr) => {
-  if (downloadErr) {
-    console.error("Download error:", downloadErr);
-  }
+      console.log("✅ yt-dlp stdout:", stdout);
+      console.log("✅ File downloaded at:", filePath);
 
-  fs.unlink(filePath, (unlinkErr) => {
-    if (unlinkErr) console.error("File cleanup failed:", unlinkErr);
-  });
-});
+      res.download(filePath, filename, (downloadErr) => {
+        if (downloadErr) {
+          console.error("❌ File download error:", downloadErr);
+        }
+
+        // Clean up (optional)
+        fs.unlink(filePath, (unlinkErr) => {
+          if (unlinkErr) console.log("🧹 Cleanup error:", unlinkErr);
+          else console.log("🧹 Temporary file deleted.");
+        });
+      });
+    }); 
+
   } catch (e) {
-    console.error("Server error:", e);
+    console.error("🔥 Server error in /download route:", e);
     res.status(500).send("Server error");
   }
 });
