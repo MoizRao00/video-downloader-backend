@@ -4,8 +4,7 @@
   "description": "Social media video extractor using yt-dlp",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "postinstall": "apt-get update && apt-get install -y python3-pip ffmpeg && pip3 install yt-dlp"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
