@@ -8,23 +8,34 @@ const PORT = 8080;
 app.use(cors());
 app.use(express.json());
 
-app.post('/extract', async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'No URL provided' });
+app.post('/download', async (req, res) => {
+  const url = req.body.url;
+  if (!url) return res.status(400).send('No URL provided');
 
-  console.log('▶ Extracting:', url); // Debug log
+  try {
+    const { exec } = require('child_process');
 
-  const videoUrl = await extractVideo(url);
+    // Create temp file name
+    const filename = `video_${Date.now()}.mp4`;
+    const filePath = `/tmp/${filename}`; // or use /app/ if on Railway
 
-  if (!videoUrl) {
-    console.log('❌ Extraction failed');
-    return res.status(404).json({ error: 'No video found' });
+    exec(`yt-dlp -o '${filePath}' '${url}'`, async (err, stdout, stderr) => {
+      if (err) {
+        console.error('yt-dlp ERROR:', stderr);
+        return res.status(500).json({ error: 'yt-dlp failed to download the video' });
+      }
+
+     res.download(filePath, filename, (downloadErr) => {
+  if (downloadErr) {
+    console.error("Download error:", downloadErr);
   }
 
-  console.log('✅ Video found:', videoUrl);
-  res.json({ videoUrl });
+  fs.unlink(filePath, (unlinkErr) => {
+    if (unlinkErr) console.error("File cleanup failed:", unlinkErr);
+  });
 });
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  } catch (e) {
+    console.error("Server error:", e);
+    res.status(500).send("Server error");
+  }
 });
