@@ -3,7 +3,7 @@ const cors = require('cors');
 const extractVideo = require('./extractors/universal');
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -40,10 +40,14 @@ app.post('/download', async (req, res) => {
           else console.log("🧹 Temporary file deleted.");
         });
       });
-    }); 
+    });
 
   } catch (e) {
     console.error("🔥 Server error in /download route:", e);
     res.status(500).send("Server error");
   }
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
