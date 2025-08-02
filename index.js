@@ -9,43 +9,25 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/download', async (req, res) => {
-  const url = req.body.url;
-  if (!url) return res.status(400).send('No URL provided');
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'No URL provided' });
 
   try {
-    const { exec } = require('child_process');
-    const fs = require('fs');
+    const videoUrl = await extractVideo(url);
 
-    const filename = `video_${Date.now()}.mp4`;
-    const filePath = `/tmp/${filename}`;
+    if (!videoUrl) {
+      return res.status(404).json({ error: 'No video found' });
+    }
 
-    exec(`yt-dlp -o '${filePath}' '${url}'`, async (err, stdout, stderr) => {
-      if (err) {
-        console.error('yt-dlp ERROR:', err);
-        console.error('stderr:', stderr);
-        return res.status(500).json({ error: 'yt-dlp failed' });
-      }
-
-      console.log("✅ yt-dlp stdout:", stdout);
-      console.log("✅ File downloaded at:", filePath);
-
-      res.download(filePath, filename, (downloadErr) => {
-        if (downloadErr) {
-          console.error("❌ File download error:", downloadErr);
-        }
-
-        // Clean up (optional)
-        fs.unlink(filePath, (unlinkErr) => {
-          if (unlinkErr) console.log("🧹 Cleanup error:", unlinkErr);
-          else console.log("🧹 Temporary file deleted.");
-        });
-      });
-    });
-
-  } catch (e) {
-    console.error("🔥 Server error in /download route:", e);
-    res.status(500).send("Server error");
+    return res.status(200).json({ videoUrl });
+  } catch (error) {
+    console.error("🔥 Extraction error:", error);
+    return res.status(500).json({ error: 'Server error during extraction' });
   }
+});
+
+app.get('/', (req, res) => {
+  res.send("✅ Video Downloader Backend is Running");
 });
 
 app.listen(PORT, () => {
